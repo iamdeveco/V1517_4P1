@@ -17,7 +17,7 @@ app = Flask(__name__)
 # ============================
 # LOAD TOKENS
 # ============================
-def load_tokens(region):
+def load_tokens():
     try:
         resp = requests.get(
             "https://notoken-production.up.railway.app/get?id=1010",
@@ -78,14 +78,9 @@ def decode_protobuf(binary):
 # ============================
 # ASYNC REQUEST
 # ============================
-async def make_request_async(encrypted_uid, region, token, session):
+async def make_request_async(encrypted_uid,token, session):
     try:
-        if region == "IND":
-            url = "https://client.ind.freefiremobile.com/GetPlayerPersonalShow"
-        elif region in {"BR", "US", "SAC", "NA"}:
-            url = "https://client.us.freefiremobile.com/GetPlayerPersonalShow"
-        else:
-            url = "https://clientbp.ggwhitehawk.com/GetPlayerPersonalShow"
+        url = "https://clientbp.ggwhitehawk.com/GetPlayerPersonalShow"
 
         edata = bytes.fromhex(encrypted_uid)
 
@@ -117,16 +112,15 @@ async def make_request_async(encrypted_uid, region, token, session):
 @app.route('/visit', methods=['GET'])
 async def visit():
     target_uid = request.args.get("uid")
-    region = request.args.get("region", "").upper()
 
-    if not target_uid or not region:
+    if not target_uid :
         return Response(
-            json.dumps({"error": "Target UID and region are required"}, ensure_ascii=False),
+            json.dumps({"error": "Target UID are required"}, ensure_ascii=False),
             content_type="application/json; charset=utf-8"
         )
 
     try:
-        tokens = load_tokens(region)
+        tokens = load_tokens()
         if tokens is None:
             raise Exception("Failed to load tokens")
 
@@ -142,7 +136,7 @@ async def visit():
 
         async with aiohttp.ClientSession() as session:
             tasks = [
-                make_request_async(encrypted_uid, region, t['token'], session)
+                make_request_async(encrypted_uid, t['token'], session)
                 for t in tokens
             ]
             results = await asyncio.gather(*tasks)
