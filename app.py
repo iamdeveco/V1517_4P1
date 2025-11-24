@@ -80,7 +80,7 @@ def decode_protobuf(binary):
 # ============================
 async def make_request_async(encrypted_uid,token, session):
     try:
-        url = "https://clientbp.ggwhitehawk.com/GetPlayerPersonalShow"
+        url = "https://clientbp.ggpolarbear.com/GetPlayerPersonalShow"
 
         edata = bytes.fromhex(encrypted_uid)
 
